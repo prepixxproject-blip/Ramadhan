@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Adhan · Ramadan Companion</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ramadan">
+<meta name="theme-color" content="#080811">
+<meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #f0c040; --gold-light: #f5d470; --gold-dim: rgba(240,192,64,0.15);
+  --dark: #0a0a18; --panel: rgba(255,255,255,0.06); --panel2: rgba(255,255,255,0.1);
+  --border: rgba(240,192,64,0.3); --border2: rgba(240,192,64,0.6);
+  --text: #ffffff; --muted: rgba(255,255,255,0.7);
+  --green: #5dd98a; --green-dim: rgba(93,217,138,0.15);
+}
+html { scroll-behavior: smooth; font-size: 18px; }
+body { background: var(--dark); color: var(--text); font-family: 'Cinzel', serif; min-height: 100vh; overflow-x: hidden; }
+
+.stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.star { position: absolute; border-radius: 50%; background: white; animation: twinkle var(--d) ease-in-out infinite alternate; opacity: 0; }
+@keyframes twinkle { to { opacity: var(--o); transform: scale(1.4); } }
+
+.moon-wrap { position: fixed; top: 18px; right: 45px; z-index: 1; pointer-events: none; animation: floatMoon 7s ease-in-out infinite alternate; }
+@keyframes floatMoon { to { transform: translateY(-14px); } }
+.moon { width: 56px; height: 56px; border-radius: 50%; background: radial-gradient(circle at 38% 45%, var(--gold-light), #a07820); box-shadow: 0 0 32px rgba(240,192,64,0.5), 0 0 65px rgba(240,192,64,0.15); position: relative; }
+.moon::after { content: ''; position: absolute; width: 43px; height: 43px; border-radius: 50%; background: var(--dark); top: 5px; left: 15px; }
+
+.nav-bar { position: sticky; top: 0; z-index: 50; background: rgba(10,10,24,0.97); backdrop-filter: blur(20px); border-bottom: 2px solid var(--border); display: flex; justify-content: center; gap: 4px; padding: 9px 6px; padding-top: calc(9px + env(safe-area-inset-top)); flex-wrap: nowrap; }
+.nav-tab { background: transparent; border: 1px solid transparent; color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 1px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; white-space: nowrap; flex: 1; text-align: center; }
+.nav-tab.active { color: var(--gold); border-color: var(--border2); background: var(--gold-dim); }
+.nav-tab:hover:not(.active) { color: var(--text); border-color: var(--border); }
+
+.section { display: none; position: relative; z-index: 2; }
+.section.active { display: block; }
+
+/* ====== PRAYER TIMES ====== */
+.pt-container { max-width: 460px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+header { text-align: center; padding-top: 18px; }
+.arabic-title { font-family: 'Amiri', serif; font-size: 2.8rem; color: var(--gold); text-shadow: 0 0 28px rgba(240,192,64,0.4); letter-spacing: 2px; }
+.subtitle { font-size: 0.75rem; letter-spacing: 4px; color: var(--muted); margin-top: 4px; text-transform: uppercase; }
+.live-clock { font-family: 'Amiri', serif; font-size: 1.3rem; color: var(--muted); letter-spacing: 2px; }
+.card { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; backdrop-filter: blur(12px); position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(240,192,64,0.05), transparent 60%); pointer-events: none; }
+.card-label { font-size: 0.75rem; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; opacity: 0.9; }
+.location-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.location-name { font-family: 'Amiri', serif; font-size: 1.3rem; flex: 1; color: var(--text); }
+.btn { background: transparent; border: 2px solid var(--border); color: var(--gold); font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 2px; padding: 9px 15px; border-radius: 8px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; white-space: nowrap; }
+.btn:hover { background: var(--gold-dim); border-color: var(--gold); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.method-select { background: rgba(10,10,24,0.9); border: 1px solid var(--border); color: var(--text); font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 1px; padding: 8px 10px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; appearance: none; text-align: center; }
+.method-select option { background: #0d0d1f; color: var(--text); }
+.times-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.time-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px 14px; text-align: center; backdrop-filter: blur(12px); transition: all 0.4s; position: relative; overflow: hidden; }
+.time-card.active { border-color: var(--gold); background: rgba(240,192,64,0.1); box-shadow: 0 0 22px rgba(240,192,64,0.15); }
+.time-card.active::after { content: 'NOW'; position: absolute; top: 8px; right: 8px; font-size: 0.6rem; letter-spacing: 2px; color: var(--gold); background: rgba(240,192,64,0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(240,192,64,0.4); }
+.time-icon { font-size: 2rem; margin-bottom: 5px; display: block; }
+.time-type { font-size: 0.7rem; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; }
+.time-arabic { font-family: 'Amiri', serif; font-size: 1.1rem; color: var(--muted); margin-bottom: 7px; }
+.time-value { font-size: 1.9rem; font-weight: 600; letter-spacing: 2px; font-variant-numeric: tabular-nums; color: var(--text); }
+.time-remaining { font-size: 0.7rem; letter-spacing: 1px; color: var(--muted); margin-top: 5px; font-family: 'Amiri', serif; font-style: italic; }
+.countdown-card { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-align: center; backdrop-filter: blur(12px); }
+.countdown-label { font-size: 0.72rem; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; opacity: 0.9; }
+.countdown-next { font-family: 'Amiri', serif; font-size: 1.2rem; color: var(--muted); margin-bottom: 7px; }
+.countdown-time { font-size: 3rem; font-weight: 600; color: var(--gold); letter-spacing: 4px; text-shadow: 0 0 18px rgba(240,192,64,0.3); font-variant-numeric: tabular-nums; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+.adhan-card { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; }
+.adhan-info h3 { font-size: 0.75rem; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+.adhan-info p { font-family: 'Amiri', serif; font-size: 1rem; color: var(--muted); }
+.toggle { position: relative; width: 56px; height: 30px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.1); border-radius: 30px; border: 1px solid var(--border); transition: 0.3s; }
+.toggle-slider::before { content: ''; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; background: var(--muted); border-radius: 50%; transition: 0.3s; }
+.toggle input:checked + .toggle-slider { background: rgba(240,192,64,0.2); border-color: var(--gold); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(26px); background: var(--gold); box-shadow: 0 0 10px rgba(240,192,64,0.5); }
+.adhan-wave { display: none; gap: 3px; align-items: flex-end; height: 18px; margin-left: 8px; }
+.adhan-wave.playing { display: flex; }
+.wave-bar { width: 3px; background: var(--gold); border-radius: 2px; animation: wv 1s ease-in-out infinite alternate; }
+.wave-bar:nth-child(1){height:5px;animation-delay:0s}.wave-bar:nth-child(2){height:12px;animation-delay:.15s}.wave-bar:nth-child(3){height:18px;animation-delay:.3s}.wave-bar:nth-child(4){height:12px;animation-delay:.45s}.wave-bar:nth-child(5){height:5px;animation-delay:.6s}
+@keyframes wv { to { transform: scaleY(0.25); opacity: 0.35; } }
+.status { font-family: 'Amiri', serif; font-size: 1rem; color: var(--muted); text-align: center; font-style: italic; padding: 8px; }
+.divider { width: 100%; display: flex; align-items: center; gap: 10px; opacity: 0.25; }
+.divider::before,.divider::after { content: ''; flex: 1; height: 1px; background: var(--gold); }
+.divider span { color: var(--gold); font-size: 0.9rem; }
+
+/* ====== DUA ====== */
+.dua-container { max-width: 580px; margin: 0 auto; padding: 20px 15px 60px; }
+.section-header { text-align: center; padding: 22px 0 18px; }
+.section-title { font-family: 'Amiri', serif; font-size: 2.2rem; color: var(--gold); text-shadow: 0 0 20px rgba(240,192,64,0.3); }
+.section-sub { font-size: 0.72rem; letter-spacing: 4px; color: var(--muted); margin-top: 5px; text-transform: uppercase; }
+.dua-categories { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-bottom: 18px; }
+.cat-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 1.5px; padding: 8px 14px; border-radius: 20px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; }
+.cat-btn.active { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
+.cat-btn:hover:not(.active) { color: var(--text); border-color: var(--border2); }
+.dua-list { display: flex; flex-direction: column; gap: 12px; }
+.dua-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: all 0.3s; cursor: pointer; }
+.dua-card:hover { border-color: rgba(240,192,64,0.4); background: var(--panel2); }
+.dua-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 17px; }
+.dua-title-wrap { display: flex; align-items: center; gap: 11px; }
+.dua-badge { font-size: 1.5rem; }
+.dua-name { font-size: 0.78rem; letter-spacing: 1.5px; color: var(--text); }
+.dua-type { font-family: 'Amiri', serif; font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+.dua-chevron { color: var(--gold); font-size: 0.85rem; transition: transform 0.3s; opacity: 0.8; }
+.dua-card.open .dua-chevron { transform: rotate(90deg); }
+.dua-body { display: none; padding: 0 17px 17px; border-top: 1px solid var(--border); }
+.dua-card.open .dua-body { display: block; }
+.dua-arabic { font-family: 'Amiri', serif; font-size: 1.6rem; color: var(--gold-light); text-align: right; line-height: 2; margin: 13px 0 9px; direction: rtl; }
+.dua-transliteration { font-style: italic; font-family: 'Amiri', serif; font-size: 0.95rem; color: var(--muted); margin-bottom: 9px; line-height: 1.7; }
+.dua-translation { font-family: 'Amiri', serif; font-size: 1rem; color: var(--text); line-height: 1.8; padding: 11px 13px; background: rgba(240,192,64,0.05); border-radius: 9px; border-left: 3px solid var(--gold); margin-bottom: 9px; }
+.dua-source { font-size: 0.65rem; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; opacity: 0.8; }
+
+/* ====== REWARDS ====== */
+.rewards-container { max-width: 580px; margin: 0 auto; padding: 20px 15px 60px; }
+.rewards-intro { background: linear-gradient(135deg, rgba(240,192,64,0.08), rgba(240,192,64,0.02)); border: 1px solid var(--border2); border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 18px; }
+.rewards-intro .r-arabic { font-family: 'Amiri', serif; font-size: 1.4rem; color: var(--gold); margin-bottom: 7px; line-height: 1.8; }
+.rewards-intro p { font-family: 'Amiri', serif; font-size: 0.95rem; color: var(--muted); line-height: 1.7; }
+.reward-tabs { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+.rtab { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 1.5px; padding: 8px 14px; border-radius: 20px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; }
+.rtab.active { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+.rtab:hover:not(.active) { color: var(--text); }
+.rewards-list { display: flex; flex-direction: column; gap: 11px; }
+.reward-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 17px 18px; display: flex; gap: 14px; align-items: flex-start; transition: all 0.3s; position: relative; overflow: hidden; }
+.reward-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--green); opacity: 0.7; }
+.reward-card:hover { background: var(--panel2); border-color: rgba(93,217,138,0.35); }
+.reward-icon { font-size: 1.9rem; flex-shrink: 0; }
+.reward-content { flex: 1; }
+.reward-title { font-size: 0.75rem; letter-spacing: 1.5px; color: var(--text); margin-bottom: 5px; }
+.reward-arabic { font-family: 'Amiri', serif; font-size: 1.15rem; color: var(--gold); direction: rtl; text-align: right; margin-bottom: 5px; }
+.reward-desc { font-family: 'Amiri', serif; font-size: 0.95rem; color: var(--muted); line-height: 1.7; }
+.reward-hadith { margin-top: 9px; font-family: 'Amiri', serif; font-size: 0.88rem; color: var(--green); font-style: italic; padding: 7px 11px; background: var(--green-dim); border-radius: 8px; line-height: 1.6; }
+.reward-source { font-size: 0.6rem; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-top: 5px; opacity: 0.8; }
+.multiplier { position: absolute; top: 11px; right: 13px; font-size: 0.58rem; letter-spacing: 1.5px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(93,217,138,0.35); padding: 3px 7px; border-radius: 20px; }
+
+.notification { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(140px); background: rgba(10,10,24,0.98); border: 2px solid var(--gold); border-radius: 13px; padding: 15px 22px; text-align: center; z-index: 200; transition: transform 0.5s cubic-bezier(0.175,0.885,0.32,1.275); box-shadow: 0 0 38px rgba(240,192,64,0.3); min-width: 240px; }
+.notification.show { transform: translateX(-50%) translateY(0); }
+.notif-arabic { font-family: 'Amiri', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 3px; }
+.notif-text { font-size: 0.7rem; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+.adhan-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 1px; padding: 11px 8px; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-align: center; text-transform: uppercase; line-height: 1.6; }
+.adhan-btn.selected { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
+.adhan-btn:hover:not(.selected) { color: var(--text); border-color: var(--border2); }
+.adhan-btn .adhan-btn-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+
+.prayer-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,0.03); transition:all 0.3s; }
+.prayer-row.next-prayer { border-color:var(--gold); background:rgba(240,192,64,0.1); }
+.prayer-row-left { display:flex; align-items:center; gap:12px; }
+.prayer-icon { font-size:1.4rem; }
+.prayer-name { font-size:0.75rem; letter-spacing:1.5px; color:var(--text); }
+.prayer-arabic-name { font-family:'Amiri',serif; font-size:0.95rem; color:var(--muted); }
+.prayer-time-val { font-family:'Cinzel',serif; font-size:1.1rem; font-weight:600; color:var(--gold); letter-spacing:2px; }
+.prayer-rem { font-family:'Amiri',serif; font-size:0.78rem; color:var(--muted); font-style:italic; margin-top:1px; text-align:right; }
+.next-badge { font-size:0.55rem; letter-spacing:1.5px; color:var(--gold); background:rgba(240,192,64,0.18); border:1px solid rgba(240,192,64,0.4); padding:2px 7px; border-radius:4px; margin-left:6px; }
+
+/* ====== HOW TO PRAY ====== */
+.howto-container { max-width: 580px; margin: 0 auto; padding: 20px 15px 60px; }
+.prayer-guide-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
+.prayer-guide-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 17px; cursor: pointer; }
+.prayer-guide-header:hover { background: var(--panel2); }
+.prayer-guide-title { display: flex; align-items: center; gap: 12px; }
+.prayer-guide-icon { font-size: 1.6rem; }
+.prayer-guide-name { font-size: 0.78rem; letter-spacing: 1.5px; color: var(--text); }
+.prayer-guide-rakaat { font-family: 'Amiri', serif; font-size: 0.95rem; color: var(--gold); margin-top: 2px; }
+.prayer-guide-body { display: none; padding: 0 17px 17px; border-top: 1px solid var(--border); }
+.prayer-guide-card.open .prayer-guide-body { display: block; }
+.prayer-guide-card.open .dua-chevron { transform: rotate(90deg); }
+.rakaat-step { background: rgba(240,192,64,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; margin-top: 12px; }
+.rakaat-title { font-size: 0.68rem; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+.step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.step-num { background: var(--gold-dim); border: 1px solid var(--border2); color: var(--gold); font-size: 0.65rem; letter-spacing: 1px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.step-content { flex: 1; }
+.step-name { font-size: 0.72rem; letter-spacing: 1px; color: var(--text); margin-bottom: 4px; }
+.step-arabic { font-family: 'Amiri', serif; font-size: 1.3rem; color: var(--gold-light); direction: rtl; text-align: right; margin: 6px 0; line-height: 1.8; }
+.step-transliteration { font-family: 'Amiri', serif; font-size: 0.9rem; color: var(--muted); font-style: italic; margin-bottom: 4px; }
+.step-translation { font-family: 'Amiri', serif; font-size: 0.92rem; color: var(--text); line-height: 1.6; }
+.surah-box { background: rgba(240,192,64,0.06); border-left: 3px solid var(--gold); border-radius: 8px; padding: 10px 13px; margin: 8px 0; }
+.surah-name { font-size: 0.62rem; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+.repeat-note { font-size: 0.62rem; letter-spacing: 1.5px; color: var(--green); background: var(--green-dim); padding: 4px 10px; border-radius: 4px; display: inline-block; margin-top: 6px; }
+.howto-intro { background: linear-gradient(135deg, rgba(240,192,64,0.08), rgba(240,192,64,0.02)); border: 1px solid var(--border2); border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 18px; }
+.wudu-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.wudu-step { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.wudu-num { color: var(--gold); font-size: 1.1rem; font-weight: 600; width: 24px; flex-shrink: 0; }
+.wudu-text { font-family: 'Amiri', serif; font-size: 0.95rem; color: var(--text); line-height: 1.6; }
+
+footer { text-align: center; padding: 18px; font-family: 'Amiri', serif; font-size: 0.85rem; color: rgba(255,255,255,0.25); letter-spacing: 1px; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.animate-in { animation: fadeUp 0.5s ease forwards; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="moon-wrap"><div class="moon"></div></div>
+<div class="notification" id="notification">
+  <div class="notif-arabic" id="notif-arabic">الله أكبر</div>
+  <div class="notif-text" id="notif-text">Adhan Time</div>
+</div>
+
+<nav class="nav-bar">
+  <button class="nav-tab active" onclick="showSection('prayer',this)">🕌 Prayer Times</button>
+  <button class="nav-tab" onclick="showSection('dua',this)">📖 Dua</button>
+  <button class="nav-tab" onclick="showSection('rewards',this)">✨ Rewards</button>
+  <button class="nav-tab" onclick="showSection('howto',this)">🤲 How to Pray</button>
+</nav>
+
+<!-- ====== PRAYER TIMES ====== -->
+<div class="section active" id="section-prayer">
+<div class="pt-container">
+  <header class="animate-in">
+    <div style="font-size:0.85rem;letter-spacing:6px;color:var(--gold);text-shadow:0 0 20px rgba(201,168,76,0.5);margin-bottom:6px;text-transform:uppercase;font-family:'Cinzel',serif;font-weight:600;">TOF Ramadhan App</div>
+    <div class="arabic-title">رمضان كريم</div>
+    <div class="subtitle">Suhoor · Iftar · Adhan</div>
+  </header>
+  <div class="live-clock" id="liveClock">--:--:--</div>
+  <div class="card animate-in">
+    <div class="card-label">📍 Location</div>
+    <div class="location-row">
+      <div class="location-name" id="locationName">Detecting location...</div>
+      <button class="btn" id="locBtn" onclick="getLocation()">Detect</button>
+    </div>
+    <select class="method-select" id="methodSelect" onchange="updateTimes()">
+      <option value="3">Muslim World League (MWL) — Recommended AU</option>
+      <option value="2">Islamic Society of North America (ISNA)</option>
+      <option value="4">Umm Al-Qura University, Makkah — Saudi Arabia</option>
+      <option value="5">Egyptian General Authority — Egypt</option>
+      <option value="1">University of Islamic Sciences — Pakistan/India</option>
+      <option value="11">Majlis Ugama Islam Singapura — Singapore/MY</option>
+      <option value="15">Moonsighting Committee (Shafaq Ahmer)</option>
+      <option value="16">Moonsighting Committee (Shafaq Abyad)</option>
+      <option value="20">Kemenag — Indonesia</option>
+    </select>
+  </div>
+  <!-- Suhoor & Iftar -->
+  <div class="times-grid">
+    <div class="time-card animate-in" id="suhoorCard">
+      <span class="time-icon">🌙</span>
+      <div class="time-type">Suhoor End</div>
+      <div class="time-arabic">السحور</div>
+      <div class="time-value" id="suhoorTime">--:--</div>
+      <div class="time-remaining" id="suhoorRem"></div>
+    </div>
+    <div class="time-card animate-in" id="iftarCard">
+      <span class="time-icon">🌅</span>
+      <div class="time-type">Iftar Begin</div>
+      <div class="time-arabic">الإفطار</div>
+      <div class="time-value" id="iftarTime">--:--</div>
+      <div class="time-remaining" id="iftarRem"></div>
+    </div>
+  </div>
+
+  <!-- 5 Daily Prayers -->
+  <div class="card animate-in" style="padding:14px 16px;">
+    <div class="card-label">🕌 Daily Prayers</div>
+    <div id="prayersList" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+  </div>
+  <div class="countdown-card animate-in">
+    <div class="countdown-label">⏳ Next Event</div>
+    <div class="countdown-next" id="countdownLabel">Waiting for location...</div>
+    <div class="countdown-time" id="countdown">--:--:--</div>
+  </div>
+  <div class="divider"><span>❈</span></div>
+  <div class="adhan-card animate-in" style="flex-direction:column;align-items:stretch;gap:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="adhan-info">
+        <h3>Adhan Alert</h3>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <p id="adhanStatus">Enable adhan sound</p>
+          <div class="adhan-wave" id="adhanWave">
+            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+          </div>
+        </div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="adhanToggle" onchange="toggleAdhan()"><span class="toggle-slider"></span></label>
+    </div>
+    <!-- Adhan Style Selector -->
+    <div>
+      <div class="card-label" style="margin-bottom:10px;">🎵 Choose Adhan Style</div>
+    <div id="adhanSelector" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:300px;overflow-y:auto;padding-right:4px;"></div>
+    </div>
+    <!-- Preview button -->
+    <button class="btn" style="width:100%;text-align:center;padding:10px;" onclick="previewAdhan()">▶ Preview Selected Adhan</button>
+  </div>
+  <div class="status" id="statusMsg">Please allow location access to get prayer times.</div>
+  <footer>Powered by Aladhan API · Times are approximate</footer>
+</div>
+</div>
+
+<!-- ====== DUA ====== -->
+<div class="section" id="section-dua">
+<div class="dua-container">
+  <div class="section-header animate-in">
+    <div class="section-title">أدعية</div>
+    <div class="section-sub">Duas · Daily Prayers & Supplications</div>
+  </div>
+  <div class="dua-categories" id="duaCategories"></div>
+  <div class="dua-list" id="duaList"></div>
+</div>
+</div>
+
+<!-- ====== REWARDS ====== -->
+<div class="section" id="section-rewards">
+<div class="rewards-container">
+  <div class="section-header animate-in">
+    <div class="section-title">ثواب رمضان</div>
+    <div class="section-sub">Ramadan Rewards · Good Deeds & Sunnah</div>
+  </div>
+  <div class="rewards-intro animate-in">
+    <div class="r-arabic">مَنْ صَامَ رَمَضَانَ إِيمَانًا وَاحْتِسَابًا غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ</div>
+    <p>"Whoever fasts Ramadan out of faith and seeking reward, his previous sins will be forgiven." — Bukhari & Muslim</p>
+  </div>
+  <div class="reward-tabs" id="rewardTabs"></div>
+  <div class="rewards-list" id="rewardsList"></div>
+</div>
+</div>
+
+<!-- ====== HOW TO PRAY ====== -->
+<div class="section" id="section-howto">
+<div class="howto-container">
+  <div class="section-header animate-in">
+    <div class="section-title">كيف تصلي</div>
+    <div class="section-sub">How to Pray · Complete Guide for Reverts</div>
+  </div>
+
+  <div class="howto-intro animate-in">
+    <div class="r-arabic">إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا</div>
+    <p style="font-family:'Amiri',serif;font-size:0.85rem;color:var(--muted);margin-top:8px;">"Indeed, prayer has been decreed upon the believers a decree of specified times." — Quran 4:103</p>
+  </div>
+
+  <!-- WUDU -->
+  <div class="prayer-guide-card" onclick="this.classList.toggle('open')">
+    <div class="prayer-guide-header">
+      <div class="prayer-guide-title">
+        <span class="prayer-guide-icon">💧</span>
+        <div>
+          <div class="prayer-guide-name">Wudu (Ablution)</div>
+          <div class="prayer-guide-rakaat">Purification before prayer · Required</div>
+        </div>
+      </div>
+      <span class="dua-chevron">▶</span>
+    </div>
+    <div class="prayer-guide-body">
+      <div class="wudu-steps">
+        <div class="wudu-step"><div class="wudu-num">1</div><div class="wudu-text">Say <strong style="color:var(--gold)">Bismillah</strong> — "In the name of Allah"</div></div>
+        <div class="wudu-step"><div class="wudu-num">2</div><div class="wudu-text">Wash both hands up to the wrists 3 times</div></div>
+        <div class="wudu-step"><div class="wudu-num">3</div><div class="wudu-text">Rinse mouth 3 times</div></div>
+        <div class="wudu-step"><div class="wudu-num">4</div><div class="wudu-text">Rinse nose (sniff water in & blow out) 3 times</div></div>
+        <div class="wudu-step"><div class="wudu-num">5</div><div class="wudu-text">Wash face from hairline to chin 3 times</div></div>
+        <div class="wudu-step"><div class="wudu-num">6</div><div class="wudu-text">Wash right arm up to elbow 3 times, then left</div></div>
+        <div class="wudu-step"><div class="wudu-num">7</div><div class="wudu-text">Wipe head with wet hands once (front to back)</div></div>
+        <div class="wudu-step"><div class="wudu-num">8</div><div class="wudu-text">Wipe both ears once</div></div>
+        <div class="wudu-step"><div class="wudu-num">9</div><div class="wudu-text">Wash right foot up to ankle 3 times, then left</div></div>
+        <div class="wudu-step"><div class="wudu-num">10</div><div class="wudu-text">Say Shahadah after wudu — your ablution is complete ✅</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAJR -->
+  <div class="prayer-guide-card" onclick="this.classList.toggle('open')">
+    <div class="prayer-guide-header">
+      <div class="prayer-guide-title">
+        <span class="prayer-guide-icon">🌄</span>
+        <div>
+          <div class="prayer-guide-name">Fajr — Dawn Prayer</div>
+          <div class="prayer-guide-rakaat">2 Rakaat · Before sunrise</div>
+        </div>
+      </div>
+      <span class="dua-chevron">▶</span>
+    </div>
+    <div class="prayer-guide-body">
+      <div class="rakaat-step">
+        <div class="rakaat-title">🔁 Rakaat 1 & 2 (same steps)</div>
+        <div class="step"><div class="step-num">1</div><div class="step-content">
+          <div class="step-name">Niyyah (Intention) — say in your heart</div>
+          <div class="step-translation">"I intend to pray 2 rakaat Fajr for Allah"</div>
+        </div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content">
+          <div class="step-name">Takbiratul Ihram — raise hands to ears</div>
+          <div class="step-arabic">اللَّهُ أَكْبَرُ</div>
+          <div class="step-transliteration">Allahu Akbar</div>
+          <div class="step-translation">Allah is the Greatest</div>
+        </div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content">
+          <div class="step-name">Standing (Qiyam) — recite Al-Fatiha</div>
+          <div class="surah-box">
+            <div class="surah-name">📖 Surah Al-Fatiha (must in every rakaat)</div>
+            <div class="step-arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ۝ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ۝ الرَّحْمَٰنِ الرَّحِيمِ ۝ مَالِكِ يَوْمِ الدِّينِ ۝ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ۝ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ۝ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ</div>
+            <div class="step-transliteration">Bismillahir rahmanir rahim. Alhamdu lillahi rabbil alamin. Ar-rahmanir rahim. Maliki yawmid din. Iyyaka na'budu wa iyyaka nasta'in. Ihdinas siratal mustaqim. Siratal ladhina an'amta alayhim ghayril maghdubi alayhim wa lad-dallin.</div>
+          </div>
+          <div class="surah-box" style="margin-top:8px;">
+            <div class="surah-name">📖 Then recite any short surah — e.g. Al-Ikhlas</div>
+            <div class="step-arabic">قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ</div>
+            <div class="step-transliteration">Qul huwa Allahu ahad. Allahus-samad. Lam yalid wa lam yulad. Wa lam yakun lahu kufuwan ahad.</div>
+            <div class="step-translation">Say: He is Allah, the One. Allah the Eternal. He neither begets nor was born. And there is none equal to Him.</div>
+          </div>
+        </div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content">
+          <div class="step-name">Ruku (Bowing) — bow with hands on knees</div>
+          <div class="step-arabic">سُبْحَانَ رَبِّيَ الْعَظِيمِ</div>
+          <div class="step-transliteration">Subhana Rabbiyal Azeem (×3)</div>
+          <div class="step-translation">Glory be to my Lord, the Magnificent</div>
+        </div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content">
+          <div class="step-name">Rise from Ruku</div>
+          <div class="step-arabic">سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ ۝ رَبَّنَا وَلَكَ الْحَمْدُ</div>
+          <div class="step-transliteration">Sami'allahu liman hamidah. Rabbana wa lakal hamd.</div>
+          <div class="step-translation">Allah hears those who praise Him. Our Lord, to You is all praise.</div>
+        </div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-content">
+          <div class="step-name">Sujud (Prostration) — forehead, nose, palms, knees, toes on ground</div>
+          <div class="step-arabic">سُبْحَانَ رَبِّيَ الْأَعْلَى</div>
+          <div class="step-transliteration">Subhana Rabbiyal A'la (×3)</div>
+          <div class="step-translation">Glory be to my Lord, the Most High</div>
+        </div></div>
+        <div class="step"><div class="step-num">7</div><div class="step-content">
+          <div class="step-name">Sit briefly between two prostrations</div>
+          <div class="step-arabic">رَبِّ اغْفِرْ لِي</div>
+          <div class="step-transliteration">Rabbighfir li</div>
+          <div class="step-translation">My Lord, forgive me</div>
+        </div></div>
+        <div class="step"><div class="step-num">8</div><div class="step-content">
+          <div class="step-name">Second Sujud — same as step 6</div>
+          <div class="repeat-note">↩ Repeat Subhana Rabbiyal A'la ×3</div>
+        </div></div>
+        <div class="step"><div class="step-num">9</div><div class="step-content">
+          <div class="step-name">After 2nd Rakaat — sit for Tashahhud</div>
+          <div class="step-arabic">التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ، السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ، السَّلَامُ عَلَيْنَا وَعَلَى عِبَادِ اللَّهِ الصَّالِحِينَ، أَشْهَدُ أَن لَّا إِلَهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ</div>
+          <div class="step-transliteration">At-tahiyyatu lillahi was-salawatu wat-tayyibat. As-salamu alayka ayyuhan-nabiyyu wa rahmatullahi wa barakatuh. As-salamu alayna wa ala ibadillahis-salihin. Ash-hadu an la ilaha illallah wa ash-hadu anna Muhammadan abduhu wa rasuluh.</div>
+        </div></div>
+        <div class="step"><div class="step-num">10</div><div class="step-content">
+          <div class="step-name">Salawat (Ibrahimiyyah)</div>
+          <div class="step-arabic">اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَّجِيدٌ</div>
+          <div class="step-transliteration">Allahumma salli ala Muhammadin wa ala ali Muhammad, kama sallayta ala Ibrahima wa ala ali Ibrahim, innaka Hamidun Majid.</div>
+        </div></div>
+        <div class="step"><div class="step-num">11</div><div class="step-content">
+          <div class="step-name">Tasleem — end prayer by turning head right then left</div>
+          <div class="step-arabic">السَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللَّهِ</div>
+          <div class="step-transliteration">As-salamu alaykum wa rahmatullah</div>
+          <div class="step-translation">Peace and mercy of Allah be upon you</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DHUHR -->
+  <div class="prayer-guide-card" onclick="this.classList.toggle('open')">
+    <div class="prayer-guide-header">
+      <div class="prayer-guide-title">
+        <span class="prayer-guide-icon">☀️</span>
+        <div>
+          <div class="prayer-guide-name">Dhuhr — Midday Prayer</div>
+          <div class="prayer-guide-rakaat">4 Rakaat · After midday</div>
+        </div>
+      </div>
+      <span class="dua-chevron">▶</span>
+    </div>
+    <div class="prayer-guide-body">
+      <div class="rakaat-step">
+        <div class="rakaat-title">Rakaat 1 & 2</div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Follow same steps as Fajr (Niyyah → Takbir → Fatiha + Surah → Ruku → Sujud × 2)</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-name">After Rakaat 2 — sit for short Tashahhud only (no Salawat yet)</div></div></div>
+      </div>
+      <div class="rakaat-step" style="margin-top:10px;">
+        <div class="rakaat-title">Rakaat 3 & 4</div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Stand up again — recite only Al-Fatiha (no extra surah in rakaat 3 & 4)</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Complete Ruku and Sujud as normal</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-name">After Rakaat 4 — full Tashahhud + Salawat + Tasleem to end</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASR -->
+  <div class="prayer-guide-card" onclick="this.classList.toggle('open')">
+    <div class="prayer-guide-header">
+      <div class="prayer-guide-title">
+        <span class="prayer-guide-icon">🌤️</span>
+        <div>
+          <div class="prayer-guide-name">Asr — Afternoon Prayer</div>
+          <div class="prayer-guide-rakaat">4 Rakaat · Mid-afternoon</div>
+        </div>
+      </div>
+      <span class="dua-chevron">▶</span>
+    </div>
+    <div class="prayer-guide-body">
+      <div class="rakaat-step">
+        <div class="rakaat-title">Same structure as Dhuhr — 4 Rakaat</div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Rakaat 1 & 2: Fatiha + short surah → Ruku → Sujud × 2</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Sit after Rakaat 2 for short Tashahhud only</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Rakaat 3 & 4: Fatiha only → Ruku → Sujud × 2</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Sit after Rakaat 4 for full Tashahhud + Salawat + Tasleem</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAGHRIB -->
+  <div class="prayer-guide-card" onclick="this.classList.toggle('open')">
+    <div class="prayer-guide-header">
+      <div class="prayer-guide-title">
+        <span class="prayer-guide-icon">🌅</span>
+        <div>
+          <div class="prayer-guide-name">Maghrib — Sunset Prayer</div>
+          <div class="prayer-guide-rakaat">3 Rakaat · After sunset (Iftar time)</div>
+        </div>
+      </div>
+      <span class="dua-chevron">▶</span>
+    </div>
+    <div class="prayer-guide-body">
+      <div class="rakaat-step">
+        <div class="rakaat-title">Rakaat 1 & 2</div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Fatiha + short surah → Ruku → Sujud × 2</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Sit after Rakaat 2 for short Tashahhud only</div></div></div>
+      </div>
+      <div class="rakaat-step" style="margin-top:10px;">
+        <div class="rakaat-title">Rakaat 3 (last)</div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Fatiha only → Ruku → Sujud × 2</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Full Tashahhud + Salawat + Tasleem to end</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISHA -->
+  <div class="prayer-guide-card" onclick="this.classList.toggle('open')">
+    <div class="prayer-guide-header">
+      <div class="prayer-guide-title">
+        <span class="prayer-guide-icon">🌙</span>
+        <div>
+          <div class="prayer-guide-name">Isha — Night Prayer</div>
+          <div class="prayer-guide-rakaat">4 Rakaat · Night time</div>
+        </div>
+      </div>
+      <span class="dua-chevron">▶</span>
+    </div>
+    <div class="prayer-guide-body">
+      <div class="rakaat-step">
+        <div class="rakaat-title">Same structure as Dhuhr & Asr — 4 Rakaat</div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Rakaat 1 & 2: Fatiha + short surah → Ruku → Sujud × 2</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Sit after Rakaat 2 for short Tashahhud only</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Rakaat 3 & 4: Fatiha only → Ruku → Sujud × 2</div></div></div>
+        <div class="step"><div class="step-num">✓</div><div class="step-content"><div class="step-translation">Full Tashahhud + Salawat + Tasleem to end</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="card animate-in" style="margin-top:6px;">
+    <div class="card-label">📋 Quick Reference — Rakaat Summary</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;text-align:center;">
+      <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:1.2rem;">🌄</div>
+        <div style="font-size:0.5rem;letter-spacing:2px;color:var(--gold);margin-top:4px;">FAJR</div>
+        <div style="font-family:'Amiri',serif;font-size:1.3rem;color:var(--text);font-weight:700;">2</div>
+      </div>
+      <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:1.2rem;">☀️</div>
+        <div style="font-size:0.5rem;letter-spacing:2px;color:var(--gold);margin-top:4px;">DHUHR</div>
+        <div style="font-family:'Amiri',serif;font-size:1.3rem;color:var(--text);font-weight:700;">4</div>
+      </div>
+      <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:1.2rem;">🌤️</div>
+        <div style="font-size:0.5rem;letter-spacing:2px;color:var(--gold);margin-top:4px;">ASR</div>
+        <div style="font-family:'Amiri',serif;font-size:1.3rem;color:var(--text);font-weight:700;">4</div>
+      </div>
+      <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:1.2rem;">🌅</div>
+        <div style="font-size:0.5rem;letter-spacing:2px;color:var(--gold);margin-top:4px;">MAGHRIB</div>
+        <div style="font-family:'Amiri',serif;font-size:1.3rem;color:var(--text);font-weight:700;">3</div>
+      </div>
+      <div style="background:var(--gold-dim);border:1px solid var(--border);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:1.2rem;">🌙</div>
+        <div style="font-size:0.5rem;letter-spacing:2px;color:var(--gold);margin-top:4px;">ISHA</div>
+        <div style="font-family:'Amiri',serif;font-size:1.3rem;color:var(--text);font-weight:700;">4</div>
+      </div>
+      <div style="background:var(--green-dim);border:1px solid rgba(76,175,122,0.3);border-radius:8px;padding:10px 6px;">
+        <div style="font-size:1.2rem;">✨</div>
+        <div style="font-size:0.5rem;letter-spacing:2px;color:var(--green);margin-top:4px;">TOTAL</div>
+        <div style="font-family:'Amiri',serif;font-size:1.3rem;color:var(--green);font-weight:700;">17</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>May Allah accept your prayers · آمين</footer>
+</div>
+</div>
+
+<script>
+// Stars
+const stEl = document.getElementById('stars');
+for (let i=0;i<160;i++){const s=document.createElement('div');s.className='star';const z=Math.random()*2.5+0.5;s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--o:${0.2+Math.random()*0.8};animation-delay:${Math.random()*4}s;`;stEl.appendChild(s);}
+
+// Nav
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { window.scrollTo(0, 0); }
+}
+
+// Prayer Times
+let lat=null,lon=null,cityName='',suhoorMs=null,iftarMs=null,adhanEnabled=false,suhoorNotified=false,iftarNotified=false;
+const prayerDefs=[
+  {key:'Fajr',name:'Fajr',arabic:'الفجر',icon:'🌄'},
+  {key:'Dhuhr',name:'Dhuhr',arabic:'الظهر',icon:'☀️'},
+  {key:'Asr',name:'Asr',arabic:'العصر',icon:'🌤️'},
+  {key:'Maghrib',name:'Maghrib',arabic:'المغرب',icon:'🌅'},
+  {key:'Isha',name:'Isha',arabic:'العشاء',icon:'🌙'},
+];
+let prayerTimes={};
+let prayerNotified={Fajr:false,Dhuhr:false,Asr:false,Maghrib:false,Isha:false};
+
+function updateClock(){const n=new Date();document.getElementById('liveClock').textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;}
+setInterval(updateClock,1000);updateClock();
+
+function getLocation(){
+  const btn=document.getElementById('locBtn');btn.disabled=true;btn.textContent='...';
+  document.getElementById('statusMsg').textContent='Detecting your location...';
+  document.getElementById('locationName').textContent='Detecting...';
+  if(!navigator.geolocation){document.getElementById('statusMsg').textContent='Geolocation not supported.';btn.disabled=false;btn.textContent='Detect';return;}
+  navigator.geolocation.getCurrentPosition(pos=>{lat=pos.coords.latitude;lon=pos.coords.longitude;reverseGeocode(lat,lon);btn.disabled=false;btn.textContent='Update';},()=>{document.getElementById('statusMsg').textContent='Location denied.';document.getElementById('locationName').textContent='Unavailable';btn.disabled=false;btn.textContent='Retry';},{timeout:10000});
+}
+
+async function reverseGeocode(la,lo){
+  try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${la}&lon=${lo}&format=json`);const d=await r.json();cityName=d.address.city||d.address.town||d.address.village||'Your Location';document.getElementById('locationName').textContent=`${cityName}, ${d.address.country||''}`;}
+  catch{cityName='Your Location';document.getElementById('locationName').textContent=`${la.toFixed(2)}°, ${lo.toFixed(2)}°`;}
+  fetchPrayerTimes();
+}
+
+async function fetchPrayerTimes(){
+  if(!lat||!lon)return;
+  const method=document.getElementById('methodSelect').value;
+  const t=new Date();const dd=String(t.getDate()).padStart(2,'0'),mm=String(t.getMonth()+1).padStart(2,'0'),yyyy=t.getFullYear();
+  document.getElementById('statusMsg').textContent='Fetching prayer times...';
+  try{
+    const res=await fetch(`https://api.aladhan.com/v1/timings/${dd}-${mm}-${yyyy}?latitude=${lat}&longitude=${lon}&method=${method}`);
+    const data=await res.json();if(data.code!==200)throw new Error();
+    const timings=data.data.timings;
+    const{Fajr,Maghrib}=timings;
+    document.getElementById('suhoorTime').textContent=Fajr;
+    document.getElementById('iftarTime').textContent=Maghrib;
+    suhoorMs=timeToMs(Fajr);iftarMs=timeToMs(Maghrib);
+    // Store all 5 prayer times
+    prayerTimes={};
+    prayerDefs.forEach(p=>{prayerTimes[p.key]=timeToMs(timings[p.key]);});
+    prayerNotified={Fajr:false,Dhuhr:false,Asr:false,Maghrib:false,Isha:false};
+    document.getElementById('statusMsg').textContent=`Times for ${cityName} · ${dd}/${mm}/${yyyy}`;
+    renderPrayersList(timings);
+    updateCards();
+  }catch{document.getElementById('statusMsg').textContent='Failed to fetch. Check internet connection.';}
+}
+
+function renderPrayersList(timings){
+  if(!timings) timings=window._lastTimings;
+  if(!timings) return;
+  window._lastTimings=timings;
+  const now=Date.now();
+  let nextKey=null,nextMs=Infinity;
+  prayerDefs.forEach(p=>{const ms=prayerTimes[p.key];if(ms>now&&ms<nextMs){nextMs=ms;nextKey=p.key;}});
+  document.getElementById('prayersList').innerHTML=prayerDefs.map(p=>{
+    const ms=prayerTimes[p.key];
+    const isNext=p.key===nextKey;
+    const diff=ms-now;
+    let remText='';
+    if(diff>0){const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);remText=h>0?`${h}h ${m}m`:`${m}m ${s}s`;}
+    else{remText='Passed';}
+    return `<div class="prayer-row ${isNext?'next-prayer':''}">
+      <div class="prayer-row-left">
+        <span class="prayer-icon">${p.icon}</span>
+        <div>
+          <div class="prayer-name">${p.name}${isNext?'<span class="next-badge">NEXT</span>':''}</div>
+          <div class="prayer-arabic-name">${p.arabic}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="prayer-time-val">${window._lastTimings[p.key]}</div>
+        <div class="prayer-rem">${isNext?'in '+remText:remText}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function timeToMs(t){const[h,m]=t.split(':').map(Number);const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate(),h,m,0).getTime();}
+
+function updateCards(){
+  if(!suhoorMs||!iftarMs)return;
+  const now=Date.now();
+  document.getElementById('suhoorCard').classList.toggle('active',now<suhoorMs);
+  document.getElementById('iftarCard').classList.toggle('active',now>=iftarMs&&now<iftarMs+900000);
+  // Update prayers list live every second
+  renderPrayersList();
+  // Countdown to next prayer
+  let nextMs=Infinity,nextLabel='';
+  prayerDefs.forEach(p=>{const ms=prayerTimes[p.key];if(ms>now&&ms<nextMs){nextMs=ms;nextLabel=`${p.icon} ${p.name} begins in`;}});
+  if(now<suhoorMs&&suhoorMs<nextMs){nextMs=suhoorMs;nextLabel='🌙 Suhoor ends in';}
+  if(nextMs===Infinity){nextMs=suhoorMs+86400000;nextLabel='🌙 Suhoor ends in (tomorrow)';}
+  const diff=nextMs-now;
+  if(diff>0){const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);document.getElementById('countdownLabel').textContent=nextLabel;document.getElementById('countdown').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+  function rem(ms){const d=ms-now;if(d<0)return'Passed';const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000);return h>0?`in ${h}h ${m}m`:`in ${m}m`;}
+  document.getElementById('suhoorRem').textContent=rem(suhoorMs);
+  document.getElementById('iftarRem').textContent=rem(iftarMs);
+  // Adhan alerts for all 5 prayers
+  if(adhanEnabled){
+    const tol=30000;
+    if(!suhoorNotified&&Math.abs(now-suhoorMs)<tol){suhoorNotified=true;triggerAdhan('Suhoor Time Ending','وقت السحور ينتهي');}
+    if(!iftarNotified&&Math.abs(now-iftarMs)<tol){iftarNotified=true;triggerAdhan('Iftar — Break Your Fast','حان وقت الإفطار');}
+    prayerDefs.forEach(p=>{
+      if(!prayerNotified[p.key]&&prayerTimes[p.key]&&Math.abs(now-prayerTimes[p.key])<tol){
+        prayerNotified[p.key]=true;
+        triggerAdhan(`${p.name} Prayer Time`,`حان وقت ${p.arabic}`);
+      }
+    });
+  }
+}
+setInterval(updateCards,1000);
+
+function triggerAdhan(text, arabic){
+  const n=document.getElementById('notification');
+  document.getElementById('notif-arabic').textContent=arabic;
+  document.getElementById('notif-text').textContent=text;
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),8000);
+  playAdhan();
+}
+
+// ====== ADHAN STYLES ======
+const BASE = 'https://prepixxproject-blip.github.io/Ramadhan/';
+const adhanStyles = [
+  { id:'azan1', name:'Adhan 1', location:'Style 1', icon:'🕋', url: BASE+'azan1.mp3' },
+  { id:'azan2', name:'Adhan 2', location:'Style 2', icon:'🟢', url: BASE+'azan2.mp3' },
+  { id:'azan3', name:'Adhan 3', location:'Style 3', icon:'🟡', url: BASE+'azan3.mp3' },
+  { id:'azan4', name:'Adhan 4', location:'Style 4', icon:'🔵', url: BASE+'azan4.mp3' },
+  { id:'azan5', name:'Adhan 5', location:'Style 5', icon:'⭐', url: BASE+'azan5.mp3' },
+  { id:'azan6', name:'Adhan 6', location:'Style 6', icon:'🔴', url: BASE+'azan6.mp3' },
+  { id:'azan7', name:'Adhan 7', location:'Style 7', icon:'🕌', url: BASE+'azan7.mp3' },
+  { id:'azan8', name:'Adhan 8', location:'Style 8', icon:'🌄', url: BASE+'azan8.mp3' },
+  { id:'azan9', name:'Adhan 9', location:'Style 9', icon:'🌙', url: BASE+'azan9.mp3' },
+  { id:'azan10', name:'Adhan 10', location:'Style 10', icon:'🎵', url: BASE+'azan10.mp3' },
+];
+let selectedAdhan = 'azan1';
+let currentAudio = null;
+let isPlaying = false;
+
+// Synthesized adhan using Web Audio API - works on ALL devices, no external URLs needed
+function playAdhanStyle(style) {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  const ctx = new AC();
+  ctx.resume();
+
+  // Different melodic patterns for each style
+  const patterns = {
+    makkah: [
+      {f:293.66,t:0,d:0.8,v:0.3},{f:349.23,t:0.9,d:0.6,v:0.3},{f:392,t:1.6,d:0.5,v:0.3},
+      {f:440,t:2.2,d:1.2,v:0.35},{f:392,t:3.5,d:0.5,v:0.3},{f:349.23,t:4.1,d:0.8,v:0.3},
+      {f:329.63,t:5,d:1.5,v:0.3},{f:293.66,t:6.6,d:0.6,v:0.25},
+      {f:349.23,t:7.5,d:0.5,v:0.3},{f:392,t:8.1,d:0.5,v:0.3},{f:440,t:8.7,d:0.8,v:0.35},
+      {f:493.88,t:9.6,d:1.2,v:0.35},{f:440,t:10.9,d:0.5,v:0.3},{f:392,t:11.5,d:0.8,v:0.3},
+      {f:349.23,t:12.4,d:1.8,v:0.3},{f:293.66,t:14.3,d:0.6,v:0.25},
+      {f:329.63,t:15.2,d:0.5,v:0.3},{f:392,t:15.8,d:0.5,v:0.3},{f:440,t:16.4,d:1,v:0.35},
+      {f:392,t:17.5,d:0.5,v:0.3},{f:349.23,t:18.1,d:2,v:0.3},
+    ],
+    madinah: [
+      {f:261.63,t:0,d:0.9,v:0.3},{f:329.63,t:1,d:0.7,v:0.3},{f:392,t:1.8,d:1,v:0.35},
+      {f:440,t:2.9,d:1.5,v:0.35},{f:392,t:4.5,d:0.6,v:0.3},{f:329.63,t:5.2,d:0.8,v:0.3},
+      {f:293.66,t:6.1,d:1.8,v:0.3},{f:261.63,t:8,d:0.7,v:0.25},
+      {f:329.63,t:9,d:0.6,v:0.3},{f:392,t:9.7,d:0.6,v:0.3},{f:493.88,t:10.4,d:1.2,v:0.35},
+      {f:523.25,t:11.7,d:1,v:0.35},{f:493.88,t:12.8,d:0.5,v:0.3},{f:440,t:13.4,d:0.5,v:0.3},
+      {f:392,t:14,d:0.8,v:0.3},{f:329.63,t:14.9,d:2,v:0.3},
+    ],
+    egyptian: [
+      {f:311.13,t:0,d:0.7,v:0.3},{f:369.99,t:0.8,d:0.5,v:0.3},{f:415.3,t:1.4,d:0.8,v:0.35},
+      {f:466.16,t:2.3,d:1.2,v:0.35},{f:415.3,t:3.6,d:0.5,v:0.3},{f:369.99,t:4.2,d:0.7,v:0.3},
+      {f:311.13,t:5,d:1.5,v:0.3},{f:277.18,t:6.6,d:0.6,v:0.25},
+      {f:311.13,t:7.5,d:0.5,v:0.3},{f:369.99,t:8.1,d:0.5,v:0.3},{f:466.16,t:8.7,d:1,v:0.35},
+      {f:523.25,t:9.8,d:0.8,v:0.35},{f:466.16,t:10.7,d:0.5,v:0.3},{f:415.3,t:11.3,d:0.5,v:0.3},
+      {f:369.99,t:11.9,d:0.8,v:0.3},{f:311.13,t:12.8,d:2,v:0.3},
+    ],
+    turkish: [
+      {f:277.18,t:0,d:1,v:0.28},{f:311.13,t:1.1,d:0.6,v:0.28},{f:369.99,t:1.8,d:0.7,v:0.32},
+      {f:415.3,t:2.6,d:1.3,v:0.32},{f:369.99,t:4,d:0.5,v:0.28},{f:311.13,t:4.6,d:1,v:0.28},
+      {f:277.18,t:5.7,d:1.8,v:0.28},{f:246.94,t:7.6,d:0.7,v:0.24},
+      {f:277.18,t:8.5,d:0.5,v:0.28},{f:369.99,t:9.1,d:0.5,v:0.3},{f:415.3,t:9.7,d:1,v:0.32},
+      {f:466.16,t:10.8,d:1.2,v:0.32},{f:415.3,t:12.1,d:0.5,v:0.28},{f:369.99,t:12.7,d:0.5,v:0.28},
+      {f:311.13,t:13.3,d:0.8,v:0.28},{f:277.18,t:14.2,d:2,v:0.28},
+    ],
+    fajr: [
+      {f:293.66,t:0,d:0.8,v:0.3},{f:349.23,t:0.9,d:0.6,v:0.3},{f:392,t:1.6,d:1,v:0.35},
+      {f:440,t:2.7,d:1.3,v:0.35},{f:392,t:4.1,d:0.5,v:0.3},{f:349.23,t:4.7,d:2,v:0.3},
+      // Hayya alas salah (extra call)
+      {f:329.63,t:7.2,d:0.5,v:0.3},{f:392,t:7.8,d:0.5,v:0.3},{f:440,t:8.4,d:1,v:0.35},
+      {f:493.88,t:9.5,d:1.5,v:0.35},{f:440,t:11.1,d:0.5,v:0.3},{f:392,t:11.7,d:2,v:0.3},
+      // Assalatu khayrum minan nawm
+      {f:349.23,t:14.2,d:0.5,v:0.32},{f:415.3,t:14.8,d:0.5,v:0.32},{f:466.16,t:15.4,d:1,v:0.36},
+      {f:523.25,t:16.5,d:1.5,v:0.36},{f:466.16,t:18.1,d:0.5,v:0.32},{f:415.3,t:18.7,d:2.5,v:0.32},
+    ],
+    tone: [
+      {f:440,t:0,d:0.8,v:0.28},{f:494,t:0.9,d:0.6,v:0.28},{f:523,t:1.6,d:1,v:0.28},
+      {f:494,t:2.7,d:0.6,v:0.28},{f:440,t:3.4,d:1.2,v:0.28},{f:392,t:4.7,d:0.8,v:0.28},
+      {f:440,t:5.6,d:1.5,v:0.28},{f:392,t:7.2,d:0.6,v:0.24},{f:349,t:7.9,d:2,v:0.24},
+    ],
+  };
+
+  const notes = patterns[style] || patterns.tone;
+  isPlaying = true;
+
+  notes.forEach(n => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const vibrato = ctx.createOscillator();
+    const vibratoGain = ctx.createGain();
+
+    // Vibrato for more realistic voice-like sound
+    vibrato.frequency.value = 5.5;
+    vibratoGain.gain.value = 3;
+    vibrato.connect(vibratoGain);
+    vibratoGain.connect(osc.frequency);
+    vibrato.start(ctx.currentTime + n.t);
+    vibrato.stop(ctx.currentTime + n.t + n.d + 0.1);
+
+    osc.type = 'sine';
+    osc.frequency.value = n.f;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    // Smooth attack and release
+    gain.gain.setValueAtTime(0, ctx.currentTime + n.t);
+    gain.gain.linearRampToValueAtTime(n.v, ctx.currentTime + n.t + 0.15);
+    gain.gain.linearRampToValueAtTime(n.v * 0.85, ctx.currentTime + n.t + n.d * 0.7);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + n.t + n.d);
+
+    osc.start(ctx.currentTime + n.t);
+    osc.stop(ctx.currentTime + n.t + n.d + 0.05);
+  });
+
+  const totalDuration = Math.max(...notes.map(n => n.t + n.d)) + 1;
+  setTimeout(() => {
+    isPlaying = false;
+    document.getElementById('adhanWave').classList.remove('playing');
+    document.getElementById('adhanStatus').textContent = adhanEnabled ? 'Adhan alerts enabled' : 'Enable adhan sound';
+    ctx.close();
+  }, totalDuration * 1000);
+}
+
+function buildAdhanSelector(){
+  document.getElementById('adhanSelector').innerHTML = adhanStyles.map(a => `
+    <button class="adhan-btn ${a.id===selectedAdhan?'selected':''}" onclick="selectAdhan('${a.id}',this)">
+      <span class="adhan-btn-icon">${a.icon}</span>
+      ${a.name}<br><span style="opacity:0.6;font-size:0.42rem;">${a.location}</span>
+    </button>`).join('');
+}
+
+function selectAdhan(id, btn) {
+  selectedAdhan = id;
+  document.querySelectorAll('.adhan-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function previewAdhan() { playAdhan(); }
+
+function toggleAdhan(){
+  adhanEnabled=document.getElementById('adhanToggle').checked;
+  document.getElementById('adhanStatus').textContent=adhanEnabled?'Adhan alerts enabled':'Enable adhan sound';
+  if(!adhanEnabled){ isPlaying=false; document.getElementById('adhanWave').classList.remove('playing'); }
+}
+
+function stopAdhan(){ isPlaying=false; }
+
+function playAdhan(){
+  if(currentAudio){ currentAudio.pause(); currentAudio=null; isPlaying=false; }
+  const style = adhanStyles.find(a=>a.id===selectedAdhan);
+  document.getElementById('adhanWave').classList.add('playing');
+  document.getElementById('adhanStatus').textContent=`Playing — ${style.name}...`;
+  
+  const audio = new Audio();
+  audio.crossOrigin = 'anonymous';
+  audio.src = style.url;
+  currentAudio = audio;
+  isPlaying = true;
+
+  const playPromise = audio.play();
+  if(playPromise !== undefined){
+    playPromise.catch(()=>{
+      // fallback to synthesized tone
+      isPlaying=false;
+      currentAudio=null;
+      playTone();
+    });
+  }
+
+  audio.onended = ()=>{
+    isPlaying=false;
+    currentAudio=null;
+    document.getElementById('adhanWave').classList.remove('playing');
+    document.getElementById('adhanStatus').textContent=adhanEnabled?'Adhan alerts enabled':'Enable adhan sound';
+  };
+  audio.onerror = ()=>{
+    isPlaying=false;
+    currentAudio=null;
+    playTone();
+  };
+}
+
+function playTone(){
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  const ctx=new AC();
+  ctx.resume();
+  const notes=[{f:440,t:0,d:.8},{f:494,t:.9,d:.6},{f:523,t:1.6,d:1},{f:494,t:2.7,d:.6},{f:440,t:3.4,d:1.2},{f:392,t:4.7,d:.8},{f:440,t:5.6,d:1.5},{f:392,t:7.2,d:.6},{f:349,t:7.9,d:2}];
+  notes.forEach(n=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=n.f;g.gain.setValueAtTime(0,ctx.currentTime+n.t);g.gain.linearRampToValueAtTime(0.27,ctx.currentTime+n.t+0.1);g.gain.linearRampToValueAtTime(0,ctx.currentTime+n.t+n.d);o.start(ctx.currentTime+n.t);o.stop(ctx.currentTime+n.t+n.d+0.05);});
+  setTimeout(()=>{document.getElementById('adhanWave').classList.remove('playing');document.getElementById('adhanStatus').textContent=adhanEnabled?'Adhan alerts enabled':'Enable adhan sound';ctx.close();},12000);
+}
+
+// ====== DUA DATA ======
+const duas = [
+  {cat:'Before Prayer',badge:'🕌',name:'Entering the Mosque',type:'قبل الصلاة',arabic:'اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ',transliteration:'Allahumma iftah li abwaba rahmatik',translation:'O Allah, open for me the gates of Your mercy.',source:'Sahih Muslim 713'},
+  {cat:'Before Prayer',badge:'💧',name:'Before Wudu (Ablution)',type:'قبل الوضوء',arabic:'بِسْمِ اللَّهِ',transliteration:'Bismillah',translation:'In the name of Allah.',source:'Abu Dawud 101'},
+  {cat:'Before Prayer',badge:'💧',name:'After Wudu',type:'بعد الوضوء',arabic:'أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ',transliteration:"Ash-hadu an la ilaha illallahu wahdahu la sharika lahu wa ash-hadu anna Muhammadan abduhu wa rasuluh",translation:'I testify that there is no god but Allah, alone with no partner, and that Muhammad is His servant and messenger.',source:'Sahih Muslim 234'},
+  {cat:'Before Prayer',badge:'🙏',name:'Intention (Niyyah)',type:'النية للصلاة',arabic:'نَوَيْتُ أَنْ أُصَلِّيَ لِلَّهِ تَعَالَى',transliteration:"Nawaytu an usalli lillahi ta'ala",translation:'I intend to pray for the sake of Allah the Exalted.',source:'General Islamic Fiqh'},
+  {cat:'After Prayer',badge:'📿',name:'Tasbeeh After Prayer',type:'التسبيح بعد الصلاة',arabic:'سُبْحَانَ اللَّهِ (٣٣) • الْحَمْدُ لِلَّهِ (٣٣) • اللَّهُ أَكْبَرُ (٣٣)',transliteration:'SubhanAllah ×33 · Alhamdulillah ×33 · Allahu Akbar ×33',translation:'Glory be to Allah (×33) · Praise be to Allah (×33) · Allah is the Greatest (×33)',source:'Sahih Muslim 597'},
+  {cat:'After Prayer',badge:'🤲',name:'Seeking Forgiveness',type:'الاستغفار',arabic:'أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ',transliteration:'Astaghfirullah, Astaghfirullah, Astaghfirullah',translation:'I seek the forgiveness of Allah (×3).',source:'Sahih Muslim 591'},
+  {cat:'After Prayer',badge:'📖',name:'Ayat al-Kursi',type:'آية الكرسي',arabic:'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ',transliteration:"Allahu la ilaha illa Huwal-Hayyul-Qayyum. La ta'khudhuhu sinatun wa la nawm...",translation:'Allah — there is no deity except Him, the Ever-Living, the Sustainer of all. Neither drowsiness nor sleep overtakes Him...',source:'Quran 2:255 · Nasai 9928'},
+  {cat:'After Prayer',badge:'🛡️',name:'Dua for Help in Worship',type:'دعاء العون على العبادة',arabic:'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',transliteration:"Allahumma a'inni 'ala dhikrika wa shukrika wa husni 'ibadatik",translation:'O Allah, help me to remember You, to thank You, and to worship You in the best manner.',source:'Abu Dawud 1522'},
+  {cat:'Suhoor & Iftar',badge:'🌙',name:'Intention for Fasting (Suhoor)',type:'نية الصيام',arabic:'وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ',transliteration:'Wa bisawmi ghadin nawaytu min shahri Ramadan',translation:'I intend to fast tomorrow in the month of Ramadan.',source:'Abu Dawud'},
+  {cat:'Suhoor & Iftar',badge:'🌅',name:'Dua for Breaking Fast (Iftar)',type:'دعاء الإفطار',arabic:'اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ',transliteration:"Allahumma laka sumtu wa bika amantu wa 'alayka tawakkaltu wa 'ala rizqika aftartu",translation:'O Allah! For You I fasted, in You I believe, upon You I rely, and with Your provision I break my fast.',source:'Abu Dawud 2358'},
+  {cat:'Suhoor & Iftar',badge:'🌅',name:'Alternate Iftar Dua',type:'دعاء آخر للإفطار',arabic:'ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ',transliteration:"Dhahaba adh-dhama' wabtallatil 'uruq wa thabatal ajru in sha' Allah",translation:'The thirst has gone, the veins are moistened, and the reward is confirmed, if Allah wills.',source:'Abu Dawud 2357'},
+  {cat:'Morning & Evening',badge:'🌤️',name:'Morning Dua',type:'دعاء الصباح',arabic:'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ',transliteration:'Asbahna wa asbahal mulku lillah, wal hamdu lillah',translation:'We have entered a new morning and the whole kingdom belongs to Allah; all praise is for Allah.',source:'Muslim 2723'},
+  {cat:'Morning & Evening',badge:'🌙',name:'Evening Dua',type:'دعاء المساء',arabic:'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ',transliteration:'Amsayna wa amsal mulku lillah, wal hamdu lillah',translation:'We have entered the evening and the whole kingdom belongs to Allah; all praise is for Allah.',source:'Muslim 2723'},
+  {cat:'Morning & Evening',badge:'🛡️',name:'Morning Protection',type:'دعاء الحماية الصباحية',arabic:"بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلَا فِي السَّمَاءِ",transliteration:"Bismillahil-ladhi la yadurru ma' ismihi shay'un fil-ardi wa la fis-sama'",translation:'In the name of Allah, with Whose name nothing on earth or in heaven can cause harm.',source:'Abu Dawud 5088'},
+  {cat:"Laylat al-Qadr",badge:'⭐',name:"Dua for the Night of Power",type:"دعاء ليلة القدر",arabic:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",transliteration:"Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'anni",translation:"O Allah, You are Forgiving and love forgiveness, so forgive me.",source:"Tirmidhi 3513 — Taught by Prophet ﷺ to Aisha RA"},
+  {cat:'General Duas',badge:'🤲',name:'Dua for Parents',type:'دعاء للوالدين',arabic:'رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ',transliteration:'Rabbi ghfir li wa liwalidayya wa lil mu\'minin',translation:'My Lord, forgive me and my parents and the believers.',source:'Quran 14:41'},
+  {cat:'General Duas',badge:'💡',name:'Dua for Guidance',type:'دعاء الهداية',arabic:'رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِن لَّدُنكَ رَحْمَةً',transliteration:"Rabbana la tuzigh qulubana ba'da idh hadaytana wa hab lana min ladunka rahmah",translation:'Our Lord, let not our hearts deviate after You have guided us, and grant us mercy from Yourself.',source:'Quran 3:8'},
+  {cat:'General Duas',badge:'🌿',name:'Dua for Ease',type:'دعاء تيسير الأمر',arabic:'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي',transliteration:'Rabbi ishrah li sadri wa yassir li amri',translation:'My Lord, expand my breast and ease my task for me.',source:'Quran 20:25-26'},
+  {cat:'General Duas',badge:'💚',name:'Dua for Good in Dunya & Akhirah',type:'دعاء الخير في الدنيا والآخرة',arabic:'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',transliteration:"Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina 'adhaban-nar",translation:'Our Lord, give us good in this world and good in the Hereafter, and save us from the punishment of the Fire.',source:'Quran 2:201 — Most recited dua of the Prophet ﷺ'},
+];
+
+const duaCats = ['All',...new Set(duas.map(d=>d.cat))];
+let activeDuaCat='All';
+
+function buildDuaUI(){
+  document.getElementById('duaCategories').innerHTML=duaCats.map(c=>`<button class="cat-btn ${c==='All'?'active':''}" onclick="filterDuas('${c}',this)">${c}</button>`).join('');
+  renderDuas();
+}
+
+function filterDuas(cat,btn){activeDuaCat=cat;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderDuas();}
+
+function renderDuas(){
+  const f=activeDuaCat==='All'?duas:duas.filter(d=>d.cat===activeDuaCat);
+  document.getElementById('duaList').innerHTML=f.map(d=>`
+    <div class="dua-card" onclick="this.classList.toggle('open')">
+      <div class="dua-header">
+        <div class="dua-title-wrap"><span class="dua-badge">${d.badge}</span><div><div class="dua-name">${d.name}</div><div class="dua-type">${d.type}</div></div></div>
+        <span class="dua-chevron">▶</span>
+      </div>
+      <div class="dua-body">
+        <div class="dua-arabic">${d.arabic}</div>
+        <div class="dua-transliteration">${d.transliteration}</div>
+        <div class="dua-translation">${d.translation}</div>
+        <div class="dua-source">Source: ${d.source}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ====== REWARDS DATA ======
+const rewards = [
+  {cat:'Fasting',icon:'🌙',title:'Fasting in Ramadan',arabic:'صيام رمضان',desc:'Every good deed is multiplied by 10 to 700 times, but fasting is special — Allah says He alone will reward it, without any limit.',hadith:'"Every deed of the son of Adam is multiplied up to 700 times. Allah says: \'Except fasting, for it is for Me and I shall reward for it without limit.\'" — Sahih Muslim 1151',multiplier:'× Unlimited',source:'Sahih Muslim 1151'},
+  {cat:'Fasting',icon:'🌬️',title:'Breath of the Fasting Person',arabic:'خلوف فم الصائم',desc:'The breath odor of a fasting Muslim is more beloved to Allah than the fragrance of musk on the Day of Judgment.',hadith:'"The smell coming out of the mouth of a fasting person is better to Allah than the smell of musk." — Bukhari 1904',multiplier:'💎 Beloved to Allah',source:'Bukhari 1904'},
+  {cat:'Fasting',icon:'🔑',title:'Gates of Heaven Opened',arabic:'فتح أبواب الجنة',desc:'During Ramadan all gates of Paradise are opened, all gates of Hellfire are closed, and the devils are chained — a mercy exclusive to this month.',hadith:'"When Ramadan enters, the gates of Paradise are opened, gates of Hellfire are closed, and devils are chained." — Bukhari 1899',multiplier:'🌟 Exclusive Month',source:'Bukhari 1899'},
+  {cat:'Prayer (Salah)',icon:'🕌',title:'Praying Taraweeh',arabic:'صلاة التراويح',desc:'Whoever stands in prayer during the nights of Ramadan with sincere faith and hope for reward will have all their past sins forgiven.',hadith:'"Whoever prays the night in Ramadan with faith and seeking reward, his previous sins will be forgiven." — Bukhari 37',multiplier:'× Full Forgiveness',source:'Bukhari 37'},
+  {cat:'Prayer (Salah)',icon:'👥',title:'Prayer in Congregation',arabic:'الصلاة في جماعة',desc:'Praying Taraweeh in congregation multiplies the reward 27 times compared to praying alone — making every night exponentially more rewarding.',hadith:'"Prayer in congregation is 27 times superior to prayer offered alone." — Bukhari 645',multiplier:'× 27',source:'Bukhari 645'},
+  {cat:'Prayer (Salah)',icon:'⭐',title:"Laylat al-Qadr Prayer",arabic:"قيام ليلة القدر",desc:"Worship on the Night of Power equals more than 1,000 months (83 years) of worship. Seeking it in the last 10 odd nights is the Sunnah.",hadith:'"The Night of Al-Qadr is better than a thousand months." — Quran 97:3',multiplier:'× 1,000 Months',source:'Quran 97:3'},
+  {cat:'Quran',icon:'📖',title:'Every Letter of Quran',arabic:'تلاوة القرآن',desc:'Each letter earns 10 good deeds, multiplied further in Ramadan. "Alif Lam Mim" is 30 rewards alone — before the Ramadan multiplier applies.',hadith:'"Whoever reads a letter from the Book of Allah receives a good deed, and a good deed is multiplied by ten." — Tirmidhi 2910',multiplier:'× 10+ per Letter',source:'Tirmidhi 2910'},
+  {cat:'Quran',icon:'🌟',title:'Learning & Teaching Quran',arabic:'تعلم القرآن وتعليمه',desc:'The best of people in the sight of Allah are those who learn the Quran and teach it to others — especially in Ramadan.',hadith:'"The best among you are those who learn the Quran and teach it." — Bukhari 5027',multiplier:'🏆 Best of People',source:'Bukhari 5027'},
+  {cat:'Charity (Sadaqah)',icon:'💛',title:'Giving Sadaqah in Ramadan',arabic:'الصدقة في رمضان',desc:'The Prophet ﷺ was most generous in Ramadan, like a swift wind that brings rain everywhere. Charity in Ramadan carries exceptional reward.',hadith:'"The Prophet was the most generous of all people, and he was most generous during Ramadan." — Bukhari 1902',multiplier:'× Most Generous',source:'Bukhari 1902'},
+  {cat:'Charity (Sadaqah)',icon:'🍽️',title:'Feeding a Fasting Person',arabic:'إفطار الصائم',desc:"Providing food for someone to break their fast gives you the full reward of that person's entire fast — without reducing their reward by a single bit.",hadith:'"Whoever provides iftar for a fasting person will have a reward like his, without reducing his reward in the slightest." — Tirmidhi 807',multiplier:'× Equal Reward',source:'Tirmidhi 807'},
+  {cat:'Charity (Sadaqah)',icon:'💧',title:'Zakat al-Fitr',arabic:'زكاة الفطر',desc:'Obligatory charity given before Eid prayer. It purifies the fasting person from idle talk and provides food for the poor.',hadith:'"The Prophet prescribed Zakat al-Fitr to purify the fasting person from idle and obscene speech." — Abu Dawud 1609',multiplier:'🌿 Purification',source:'Abu Dawud 1609'},
+  {cat:'Sunnah Deeds',icon:'🌙',title:'Eating Suhoor',arabic:'بركة السحور',desc:'Eating Suhoor is a blessed Sunnah. Even a sip of water earns blessings. Allah and His angels send salutations upon those who eat Suhoor.',hadith:'"Eat suhoor, for in suhoor there is barakah (blessing)." — Bukhari 1923',multiplier:'🌙 Barakah',source:'Bukhari 1923'},
+  {cat:'Sunnah Deeds',icon:'🏠',title:"I'tikaf (Seclusion)",arabic:'الاعتكاف',desc:"Spending the last 10 nights of Ramadan in the mosque in dedicated worship — the Sunnah the Prophet ﷺ maintained every year of his life.",hadith:'"The Prophet used to practice I\'tikaf in the last ten days of Ramadan until he passed away." — Bukhari 2025',multiplier:'⭐ Catch Laylat al-Qadr',source:'Bukhari 2025'},
+  {cat:'Sunnah Deeds',icon:'😊',title:'Good Character & Smiling',arabic:'حسن الخلق',desc:'Your smile to a Muslim is charity. Maintaining patience and good character while fasting — responding to provocation with "I am fasting" — is itself worship.',hadith:'"Your smiling in the face of your brother is charity." — Tirmidhi 1956',multiplier:'💛 Charity',source:'Tirmidhi 1956'},
+  {cat:'Sunnah Deeds',icon:'🙏',title:'Dua at Iftar Time',arabic:'دعاء عند الإفطار',desc:'The dua of a fasting person at the moment of breaking their fast is one of three prayers that are never rejected by Allah.',hadith:'"Three prayers are not rejected: the prayer of a fasting person when breaking the fast." — Tirmidhi 3598',multiplier:'✅ Never Rejected',source:'Tirmidhi 3598'},
+  {cat:'Sunnah Deeds',icon:'🔄',title:'Dhikr & Istighfar',arabic:'الذكر والاستغفار',desc:"Constant remembrance of Allah — SubhanAllah, Alhamdulillah, Allahu Akbar, La ilaha illallah — plants trees in Paradise. Istighfar (seeking forgiveness) opens doors of mercy.",hadith:'"SubhanAllah, Alhamdulillah, La ilaha illallah, Allahu Akbar — these four words are more beloved to me than all that the sun shines upon." — Muslim 2695',multiplier:'🌳 Trees in Paradise',source:'Muslim 2695'},
+];
+
+const rewardCats=[...new Set(rewards.map(r=>r.cat))];
+let activeRCat=rewardCats[0];
+
+function buildRewardsUI(){
+  document.getElementById('rewardTabs').innerHTML=rewardCats.map((c,i)=>`<button class="rtab ${i===0?'active':''}" onclick="filterRewards('${c}',this)">${c}</button>`).join('');
+  renderRewards();
+}
+
+function filterRewards(cat,btn){activeRCat=cat;document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderRewards();}
+
+function renderRewards(){
+  const f=rewards.filter(r=>r.cat===activeRCat);
+  document.getElementById('rewardsList').innerHTML=f.map(r=>`
+    <div class="reward-card animate-in">
+      <div class="reward-icon">${r.icon}</div>
+      <div class="reward-content">
+        <div class="reward-title">${r.title}</div>
+        <div class="reward-arabic">${r.arabic}</div>
+        <div class="reward-desc">${r.desc}</div>
+        <div class="reward-hadith">${r.hadith}</div>
+        <div class="reward-source">Reference: ${r.source}</div>
+      </div>
+      <div class="multiplier">${r.multiplier}</div>
+    </div>`).join('');
+}
+
+buildDuaUI();
+buildRewardsUI();
+buildAdhanSelector();
+getLocation();
+</script>
+</body>
+</html>
